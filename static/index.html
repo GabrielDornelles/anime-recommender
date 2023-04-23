@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Anime Recommender</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Anime Recommender</h1>
+  </header>
+  <main>
+    <div class="checkbox-container">
+      <label for="svm-checkbox">SVM</label>
+      <input type="checkbox" id="svm-checkbox" name="model" value="svm">
+      <label for="knn-checkbox">KNN</label>
+      <input type="checkbox" id="knn-checkbox" name="model" value="knn">
+    </div>
+    <div class="search-container">
+      <input type="text" id="search-bar" placeholder="Search for anime...">
+      <button id="search-btn">Search</button>
+    </div>
+    <div id="results"></div>
+  </main>
+  <script src="script.js"></script>
+  <script>
+    const searchBtn = document.querySelector('#search-btn');
+    const searchBar = document.querySelector('#search-bar');
+    const results = document.querySelector('#results');
+
+    const svmCheckbox = document.querySelector('#svm-checkbox');
+    const knnCheckbox = document.querySelector('#knn-checkbox');
+
+    svmCheckbox.addEventListener('change', () => {
+      if (svmCheckbox.checked) {
+        knnCheckbox.checked = false;
+      }
+    });
+
+    knnCheckbox.addEventListener('change', () => {
+      if (knnCheckbox.checked) {
+        svmCheckbox.checked = false;
+      }
+    });
+
+    searchBtn.addEventListener('click', () => {
+      results.innerHTML = 'Loading...';
+
+      fetch('/search', {
+        method: 'POST',
+        body: JSON.stringify({ query: searchBar.value, recommendation_size: 20, mode: document.querySelector('input[name="model"]:checked').value}),
+        headers: { 'Content-Type': 'application/json' },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          results.innerHTML = '';
+
+          data.forEach((result) => {
+            const div = document.createElement('div');
+            div.classList.add('result');
+
+            const img = document.createElement('img');
+            img.src = result.image;
+
+            const h2 = document.createElement('h2');
+            h2.textContent = result.name.replace(/\b\w/g, (c) => c.toUpperCase());
+
+            const p = document.createElement('p');
+            p.textContent = 'Genres: ' + result.genres.join(', ');
+
+            div.appendChild(img);
+            div.appendChild(h2);
+            div.appendChild(p);
+            results.appendChild(div);
+          });
+        })
+        .catch((err) => {
+          results.innerHTML = 'An error occurred.';
+          console.error(err);
+        });
+    });
+
+  </script>
+</body>
+</html>
+
+<style>
+  body {
+    background-color: #1f1f1f;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+  }
+
+  header {
+    padding: 20px;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 36px;
+  }
+
+  .search-container {
+    display: flex;
+    margin: 20px;
+  }
+
+  #search-bar {
+    flex-grow: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 18px;
+    background-color: #333;
+    color: #fff;
+  }
+
+  #search-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 18px;
+    background-color: #4CAF50;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  #search-btn:hover {
+    background-color: #3e8e41;
+  }
+
+  #results {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 20px;
+  }
+
+  .result {
+    width: 200px;
+    margin: 10px;
+    text-align: center;
+  }
+
+  .result img {
+    width: 100%;
+    border-radius: 5px;
+  }
+
+  .result h2 {
+    margin: 10px 0;
+    font-size: 24px;
+  }
+
+  .result p {
+    margin: 10px 0;
+    padding: 5px;
+    background-color: #4CAF50;
+    color: #fff;
+    border-radius: 20px;
+    display: inline-block;
+  }
+  .checkbox-container {
+    display: flex;
+    align-items: center;
+    margin: 20px;
+  }
+
+  .checkbox-container label {
+    margin-right: 10px;
+    font-size: 18px;
+  }
+
+  .checkbox-container input[type="checkbox"] {
+    margin-right: 5px;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #333;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .checkbox-container input[type="checkbox"]:checked {
+    background-color: #4CAF50;
+  }
+
+  .checkbox-container input[type="checkbox"]::before {
+    content: "";
+    display: block;
+    width: 10px;
+    height: 10px;
+    margin: 5px;
+    border-radius: 50%;
+    background-color: #fff;
+    transform: scale(0);
+    transition: transform 0.2s ease;
+  }
+
+  .checkbox-container input[type="checkbox"]:checked::before {
+    transform: scale(1);
+  }
+  
+</style>

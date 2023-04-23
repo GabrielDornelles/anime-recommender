@@ -1,0 +1,10 @@
+python-dotenv==0.21.0
+fastapi==0.89.0
+fastapi-utils==0.2.1
+uvicorn==0.20.0
+pillow==9.4.0
+gunicorn==20.1.0
+numpy
+scikit-learn
+requests
+editdistance
