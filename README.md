@@ -3,6 +3,11 @@ Simple synopsis based recommender. Embeddings are projected with Bigbird-ROBERTA
 
 Built with FastAPI. Frontend page built with ChatGPT (I know nothing about html/css/js, I just re-arrange what it writes).
 
+## How it looks like
+
+![image](https://user-images.githubusercontent.com/56324869/233866039-1a8fc973-dc18-4eda-96c7-8ad50523f70a.png)
+
+
 ## Run
 
 ```sh
