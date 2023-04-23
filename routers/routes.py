@@ -20,7 +20,7 @@ class Request(BaseModel):
     mode: str
 
 @cbv(router)
-class CaptchaSolverRoutes:
+class RecommenderRoutes:
 
     @router.get(
     '/status',
@@ -31,7 +31,7 @@ class CaptchaSolverRoutes:
     def status(self):
         return {"status": "OK"}
 
-    @router.get("/static")
+    @router.get("/")
     def read_file(path: str):
         return FileResponse("static/index.html")
         
