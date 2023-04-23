@@ -12,7 +12,7 @@ Built with FastAPI. Frontend page built with ChatGPT (I know nothing about html/
 
 ```sh
 uvicorn app:app # or
-gunicorn 0.0.0.0:8000 --daemon app:app # deploy it somewhere
+gunicorn 0.0.0.0:8000 --daemon app:app -k uvicorn.workers.UvicornWorker # deploy it somewhere
 ```
 
 ## Use
