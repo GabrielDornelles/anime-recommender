@@ -31,7 +31,7 @@ class RecommenderRoutes:
     def status(self):
         return {"status": "OK"}
 
-    @router.get("/")
+    @router.get("/home")
     def read_file(path: str):
         return FileResponse("static/index.html")
         
@@ -44,7 +44,5 @@ class RecommenderRoutes:
         query = data.query
         recommendation_size = data.recommendation_size
         mode = data.mode.lower()
-        # TODO: apply something to map query to right name in mapped anime list
-        print(mode)
         recommendations = recommender(query, recommendation_size, mode=mode)
         return JSONResponse(status_code=200,content=recommendations)

@@ -17,5 +17,5 @@ gunicorn 0.0.0.0:8000 --daemon app:app -k uvicorn.workers.UvicornWorker # deploy
 
 ## Use
 
-Access ```http://127.0.0.1:8000```, frontend will be displayed on ```/``` (no route, root).
+Access ```http://127.0.0.1:8000/home```, frontend will be displayed on ```/home```.
 
