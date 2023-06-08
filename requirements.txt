@@ -8,3 +8,6 @@ numpy
 scikit-learn
 requests
 editdistance
+transformers
+torch
+#sentencepiece

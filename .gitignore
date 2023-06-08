@@ -1,4 +1,7 @@
 # Byte-compiled / optimized / DLL files
+dataset.json
+*.pickle
+*.zip
 __pycache__/
 *.py[cod]
 
