@@ -2,20 +2,21 @@ import pickle
 import numpy as np
 from sklearn import svm
 import torch
-from transformers import BertTokenizer, BertModel
+import editdistance
+#from transformers import BertTokenizer, BertModel
 
 
 class AnimeRecommender:
 
     def __init__(self) -> None:
         self._init_synopsis_embeddings()
-        self._init_anime_name_embeddings()
-        self._init_bert()
+        #self._init_anime_name_embeddings()
+        #self._init_bert()
     
-    def _init_bert(self):
-        self.device = torch.device("cpu")
-        self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-        self.bert = BertModel.from_pretrained('bert-base-uncased').to(self.device)
+    # def _init_bert(self):
+    #     self.device = torch.device("cpu")
+    #     self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+    #     self.bert = BertModel.from_pretrained('bert-base-uncased').to(self.device)
   
     def _init_synopsis_embeddings(self):
         with open("data/anime_embbedings_dict.pickle", 'rb') as f:
@@ -26,43 +27,43 @@ class AnimeRecommender:
         with open('data/anime_name_list.pickle', 'rb') as f:
             self.anime_list = pickle.load(f)
     
-    def _init_anime_name_embeddings(self):
-        with open('data/anime_name_embeddings.pickle', 'rb') as f:
-            anime_name_embeddings = pickle.load(f)
-        embeddings = np.array([v for v in anime_name_embeddings.values()])
-        embeddings = embeddings / np.sqrt((embeddings**2).sum(1, keepdims=True))
-        self.anime_name_embeddings = embeddings
+    # def _init_anime_name_embeddings(self):
+    #     with open('data/anime_name_embeddings.pickle', 'rb') as f:
+    #         anime_name_embeddings = pickle.load(f)
+    #     embeddings = np.array([v for v in anime_name_embeddings.values()])
+    #     embeddings = embeddings / np.sqrt((embeddings**2).sum(1, keepdims=True))
+    #     self.anime_name_embeddings = embeddings
     
     def __call__(self, query: str, recommendation_size: int, mode: str = "svm") -> list:
         return self.get_recommendations(query, recommendation_size, mode)
 
-    def bert_inference(self, query: str) -> np.array:
-        tokens = self.tokenizer.encode(query, add_special_tokens=True)
-        input_ids = torch.tensor([tokens]).to(self.device)
-        with torch.no_grad():
-            outputs = self.bert(input_ids)
-            embeddings = outputs.last_hidden_state
-        synopsis_embeddings = embeddings.squeeze(0)
-        avg_synopsis_embedding = torch.mean(synopsis_embeddings, dim=0)
-        avg_synopsis_embedding = avg_synopsis_embedding.cpu().numpy()
-        return avg_synopsis_embedding
+    # def bert_inference(self, query: str) -> np.array:
+    #     tokens = self.tokenizer.encode(query, add_special_tokens=True)
+    #     input_ids = torch.tensor([tokens]).to(self.device)
+    #     with torch.no_grad():
+    #         outputs = self.bert(input_ids)
+    #         embeddings = outputs.last_hidden_state
+    #     synopsis_embeddings = embeddings.squeeze(0)
+    #     avg_synopsis_embedding = torch.mean(synopsis_embeddings, dim=0)
+    #     avg_synopsis_embedding = avg_synopsis_embedding.cpu().numpy()
+    #     return avg_synopsis_embedding
 
-    # def get_most_similar_string(self, query):
-    #     min_distance = float('inf')
-    #     most_similar_string = None
-    #     for string in self.anime_list:
-    #         distance = editdistance.eval(query, string)
-    #         if distance < min_distance:
-    #             min_distance = distance
-    #             most_similar_string = string
-    #     return most_similar_string
-    
     def get_most_similar_string(self, query):
-        query_embeddings = self.bert_inference(query)
-        query_embeddings = query_embeddings / np.sqrt((query_embeddings**2).sum())
-        similarities = self.anime_name_embeddings.dot(query_embeddings)
-        sorted_ix = np.argsort(-similarities)
-        return self.anime_list[sorted_ix[0]]
+        min_distance = float('inf')
+        most_similar_string = None
+        for string in self.anime_list:
+            distance = editdistance.eval(query, string)
+            if distance < min_distance:
+                min_distance = distance
+                most_similar_string = string
+        return most_similar_string
+    
+    # def get_most_similar_string(self, query):
+    #     query_embeddings = self.bert_inference(query)
+    #     query_embeddings = query_embeddings / np.sqrt((query_embeddings**2).sum())
+    #     similarities = self.anime_name_embeddings.dot(query_embeddings)
+    #     sorted_ix = np.argsort(-similarities)
+    #     return self.anime_list[sorted_ix[0]]
     
     def get_recommendations(self, query: str, 
             recommendation_size: int, 
@@ -76,13 +77,13 @@ class AnimeRecommender:
         if mode.lower() == "svm":
             x = self.embeddings
             y = np.zeros(len(self.embeddings_table))
-            # Find the idx of the query using cosine similarity, it should be 1 with itself
-            #similarities = cosine_similarity(x, query.reshape(1, -1)).ravel()
-            #idx = np.argmax(similarities)
-            query_idx = np.where(np.all(self.embeddings == query, axis=1))[0][0]
+        
+            query_idx = np.where(np.all(self.embeddings == query, axis=1))
             y[query_idx] = 1
+
             clf = svm.LinearSVC(class_weight='balanced', verbose=False, max_iter=10000, tol=1e-6, C=1.0)
             clf.fit(x, y) # train
+            
             similarities = clf.decision_function(x)
             sorted_ix = np.argsort(-similarities)
         if mode.lower() == "knn":
