@@ -20,7 +20,7 @@ else:
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost"],  # Set this to restrict the origins if desired
+    allow_origins=["http://localhost:3000"],  # Set this to restrict the origins if desired
     allow_credentials=True,
     allow_methods=["*"],  # Set the allowed HTTP methods
     allow_headers=["*"],  # Set the allowed headers

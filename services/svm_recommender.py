@@ -107,7 +107,7 @@ class AnimeRecommender:
          
             buffer = {
                 "name": anime_name,
-                "data": data
+                "data": data[anime_name]
             }
             recommendations.append(buffer)
             if len(recommendations) == recommendation_size + 1: 
