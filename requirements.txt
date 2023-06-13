@@ -8,7 +8,7 @@ numpy
 scikit-learn
 requests
 editdistance
-transformers
+#transformers
 #pip install torch==1.2.0+cpu -f https://download.pytorch.org/whl/torch_stable.html.
 #torch==1.11.0+cpu
 #sentencepiece
