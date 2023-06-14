@@ -83,7 +83,7 @@ class AnimeRecommender:
         if mode.lower() == "svm":
             x = self.embeddings
             y = np.zeros(x.shape[0])
-            query_idx = np.where(np.all(self.embeddings == query, axis=1))[0][0]
+            query_idx = self.anime_list.index(query_anime_name)#[0][0]#np.where(np.all(self.embeddings == query, axis=1))#[0][0]
             y[query_idx] = 1
             clf = svm.LinearSVC(class_weight='balanced', verbose=False, max_iter=10000, tol=1e-6, C=1.0)
             clf.fit(x, y) # train
