@@ -1,10 +1,14 @@
 import pickle
 import numpy as np
 from sklearn import svm
-#import torch
 import editdistance
+from pymongo import MongoClient
+#import torch
 #from transformers import BertTokenizer, BertModel
 
+client = MongoClient("mongodb://localhost:27017/")
+db = client["animelist"]
+collection = db["gogaido_beta"]
 
 class AnimeRecommender:
 
@@ -19,13 +23,13 @@ class AnimeRecommender:
     #     self.bert = BertModel.from_pretrained('bert-base-uncased').to(self.device)
   
     def _init_synopsis_embeddings(self):
-        #with open("data/anime_embbedings_dict.pickle", 'rb') as f:
         with open("data/anime_embeddings_dict.pickle", 'rb') as f:
             self.embeddings_table = pickle.load(f)
         embeddings = np.array([v["embeddings"] for v in self.embeddings_table.values()])
         embeddings = embeddings / np.sqrt((embeddings**2).sum(1, keepdims=True))
         self.embeddings = embeddings
-        #with open('data/anime_name_list.pickle', 'rb') as f:
+        del self.embeddings_table
+        
         with open('data/anime_names.pickle', 'rb') as f:
             self.anime_list = pickle.load(f)
     
@@ -71,17 +75,14 @@ class AnimeRecommender:
             recommendation_size: int, 
             mode: str = "svm",
         ) -> list:
-    
-        query = self.get_most_similar_string(query)
-        query = self.embeddings_table[query]["embeddings"]
+
+        query_anime_name = self.get_most_similar_string(query)
+        query = self.embeddings[self.anime_list.index(query_anime_name)]
         query = query / np.sqrt((query**2).sum())
 
         if mode.lower() == "svm":
             x = self.embeddings
-            y = np.zeros(len(self.embeddings_table))
-            # Find the idx of the query using cosine similarity, it should be 1 with itself
-            #similarities = cosine_similarity(x, query.reshape(1, -1)).ravel()
-            #idx = np.argmax(similarities)
+            y = np.zeros(x.shape[0])
             query_idx = np.where(np.all(self.embeddings == query, axis=1))[0][0]
             y[query_idx] = 1
             clf = svm.LinearSVC(class_weight='balanced', verbose=False, max_iter=10000, tol=1e-6, C=1.0)
@@ -93,26 +94,51 @@ class AnimeRecommender:
             sorted_ix = np.argsort(-similarities)
         
         recommendations = []
+    
+        for idx in (sorted_ix):
 
-        # Clean Hentai Tag
-        hentai_flag = False
-        for idx, k in enumerate(sorted_ix):
-            anime_name = list(self.embeddings_table.keys())[k]
-            data = self.embeddings_table[anime_name]["data"]
-            genres = data[anime_name]["genres"]
-            for genre in genres:
-                if genre["name"].lower() == "hentai":
-                    hentai_flag = True
-                
-            if hentai_flag:
-                hentai_flag = False
-                continue
-            
+            anime_name = self.anime_list[idx]
+            if '.' in anime_name:
+                query_name = anime_name.replace(".", "_")
+            else:
+                query_name = anime_name
+            db_query = {query_name: {"$exists": True}}
+            results = collection.find(db_query)
+            data =  list([result for result in results][0].values())[1]
             buffer = {
                 "name": anime_name,
-                "data": data[anime_name]
+                "data": data
             }
             recommendations.append(buffer)
             if len(recommendations) == recommendation_size + 1: 
                 break
         return recommendations
+
+        # Clean Hentai Tag
+        # hentai_flag = False
+        # for idx, k in enumerate(sorted_ix):
+        #     anime_name = list(self.embeddings_table.keys())[k]
+        #     data = self.embeddings_table[anime_name]["data"]
+
+
+        #     genres = data[anime_name]["genres"]
+        #     for genre in genres:
+        #         if genre["name"].lower() == "hentai":
+        #             hentai_flag = True
+                
+        #     if hentai_flag:
+        #         hentai_flag = False
+        #         continue
+            
+        #     buffer = {
+        #         "name": anime_name,
+        #         "data": data[anime_name]
+        #     }
+        #     recommendations.append(buffer)
+        #     if len(recommendations) == recommendation_size + 1: 
+        #         break
+        # return recommendations
+
+    
+
+
