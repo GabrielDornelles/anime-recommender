@@ -1,4 +1,4 @@
-# anime_recommender
+# anime-recommender
 A Simple synopsis based anime recommender. Embeddings are projected with Bigbird-ROBERTA, kNN and SVM supported for recommendations.
 
 We use a BERT model to perform name matching between the searched anime and the animes we have in the database.
