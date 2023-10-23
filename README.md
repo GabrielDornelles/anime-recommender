@@ -1,6 +1,16 @@
 # anime-recommender
-A Simple synopsis based anime recommender. Embeddings are projected with Bigbird-ROBERTA, kNN and SVM supported for recommendations.
+A Simple synopsis based anime recommender. Embeddings are projected with BigBird-ROBERTA.
 
+You can see its embeddings are really good since the model not only reduce the dimensionality of the data (synopsis) but it also preserves semantic relationships. See how it recommends a lot of mecha genre anime when asked to recommend animes like Evangelion (remember it has no knowledge of tags or titles, it only reads synopsis):
+
+![image](/docs/images/evangelion_search.png)
+
+We can also see that the recommended embeddings trained by an SVC are mostly close to each other when plotted in a 3d plane with PCA:
+![image](/docs/images/pca_on_embeddings.jpg)
+
+Although the hyperplane itself is not visually intuitive, remember embeddings are 768d not 3d (and you can see on the left plot a blue dot inside the red ones, to remember that not only the 3 dimensions with most variance are being used when recommending). A lightweight recommendation is also possible using a kNN instead of the SVM approach.
+
+## Search name matching
 We use a BERT model to perform name matching between the searched anime and the animes we have in the database.
 
 ## The simplest Frontend
