@@ -14,17 +14,17 @@ if (ENVIRONMENT_NAME is not None) and (ENVIRONMENT_NAME.startswith("production")
     app = FastAPI(docs_url=None, redoc_url=None)
 else:
     app = FastAPI(
-        title="SVM Anime Recommender",
+        title="Anime Recommender",
         description="",
-        version="0.0.1")
+        version="1.0.0")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://gogaido.vercel.app/"],  # Set this to restrict the origins if desired
-    allow_credentials=True,
-    allow_methods=["*"],  # Set the allowed HTTP methods
-    allow_headers=["*"],  # Set the allowed headers
-)
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["http://localhost:8000", "http://localhost:3000", "https://gogaido.vercel.app/"],  # Set this to restrict the origins if desired
+#     allow_credentials=True,
+#     allow_methods=["*"],  # Set the allowed HTTP methods
+#     allow_headers=["*"],  # Set the allowed headers
+# )
 app.include_router(router)
 
 if __name__ == '__main__':

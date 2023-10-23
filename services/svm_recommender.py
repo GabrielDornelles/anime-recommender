@@ -3,8 +3,8 @@ import numpy as np
 from sklearn import svm
 import editdistance
 from pymongo import MongoClient
-#import torch
-#from transformers import BertTokenizer, BertModel
+import torch
+from transformers import BertTokenizer, BertModel
 
 client = MongoClient("mongodb://localhost:27017/")
 db = client["animelist"]
@@ -14,13 +14,13 @@ class AnimeRecommender:
 
     def __init__(self) -> None:
         self._init_synopsis_embeddings()
-        #self._init_anime_name_embeddings()
-        #self._init_bert()
+        self._init_anime_name_embeddings()
+        self._init_bert()
     
-    # def _init_bert(self):
-    #     self.device = torch.device("cpu")
-    #     self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-    #     self.bert = BertModel.from_pretrained('bert-base-uncased').to(self.device)
+    def _init_bert(self):
+        self.device = torch.device("cpu")
+        self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+        self.bert = BertModel.from_pretrained('bert-base-uncased').to(self.device)
   
     def _init_synopsis_embeddings(self):
         with open("data/anime_embeddings_dict.pickle", 'rb') as f:
@@ -33,43 +33,43 @@ class AnimeRecommender:
         with open('data/anime_names.pickle', 'rb') as f:
             self.anime_list = pickle.load(f)
     
-    # def _init_anime_name_embeddings(self):
-    #     with open('data/anime_name_embeddings.pickle', 'rb') as f:
-    #         anime_name_embeddings = pickle.load(f)
-    #     embeddings = np.array([v for v in anime_name_embeddings.values()])
-    #     embeddings = embeddings / np.sqrt((embeddings**2).sum(1, keepdims=True))
-    #     self.anime_name_embeddings = embeddings
+    def _init_anime_name_embeddings(self):
+        with open('data/anime_name_embeddings.pickle', 'rb') as f:
+            anime_name_embeddings = pickle.load(f)
+        embeddings = np.array([v for v in anime_name_embeddings.values()])
+        embeddings = embeddings / np.sqrt((embeddings**2).sum(1, keepdims=True))
+        self.anime_name_embeddings = embeddings
     
     def __call__(self, query: str, recommendation_size: int, mode: str = "svm") -> list:
         return self.get_recommendations(query, recommendation_size, mode)
 
-    # def bert_inference(self, query: str) -> np.array:
-    #     tokens = self.tokenizer.encode(query, add_special_tokens=True)
-    #     input_ids = torch.tensor([tokens]).to(self.device)
-    #     with torch.no_grad():
-    #         outputs = self.bert(input_ids)
-    #         embeddings = outputs.last_hidden_state
-    #     synopsis_embeddings = embeddings.squeeze(0)
-    #     avg_synopsis_embedding = torch.mean(synopsis_embeddings, dim=0)
-    #     avg_synopsis_embedding = avg_synopsis_embedding.cpu().numpy()
-    #     return avg_synopsis_embedding
+    def bert_inference(self, query: str) -> np.array:
+        tokens = self.tokenizer.encode(query, add_special_tokens=True)
+        input_ids = torch.tensor([tokens]).to(self.device)
+        with torch.no_grad():
+            outputs = self.bert(input_ids)
+            embeddings = outputs.last_hidden_state
+        synopsis_embeddings = embeddings.squeeze(0)
+        avg_synopsis_embedding = torch.mean(synopsis_embeddings, dim=0)
+        avg_synopsis_embedding = avg_synopsis_embedding.cpu().numpy()
+        return avg_synopsis_embedding
 
-    def get_most_similar_string(self, query):
-        min_distance = float('inf')
-        most_similar_string = None
-        for string in self.anime_list:
-            distance = editdistance.eval(query, string)
-            if distance < min_distance:
-                min_distance = distance
-                most_similar_string = string
-        return most_similar_string
+    # def get_most_similar_string(self, query): # alternate version if BERT cant be used
+    #     min_distance = float('inf')
+    #     most_similar_string = None
+    #     for string in self.anime_list:
+    #         distance = editdistance.eval(query, string)
+    #         if distance < min_distance:
+    #             min_distance = distance
+    #             most_similar_string = string
+    #     return most_similar_string
     
-    # def get_most_similar_string(self, query):
-    #     query_embeddings = self.bert_inference(query)
-    #     query_embeddings = query_embeddings / np.sqrt((query_embeddings**2).sum())
-    #     similarities = self.anime_name_embeddings.dot(query_embeddings)
-    #     sorted_ix = np.argsort(-similarities)
-    #     return self.anime_list[sorted_ix[0]]
+    def get_most_similar_string(self, query):
+        query_embeddings = self.bert_inference(query)
+        query_embeddings = query_embeddings / np.sqrt((query_embeddings**2).sum())
+        similarities = self.anime_name_embeddings.dot(query_embeddings)
+        sorted_ix = np.argsort(-similarities)
+        return self.anime_list[sorted_ix[0]]
     
     def get_recommendations(self, query: str, 
             recommendation_size: int, 
@@ -104,41 +104,18 @@ class AnimeRecommender:
                 query_name = anime_name
             db_query = {query_name: {"$exists": True}}
             results = collection.find(db_query)
-            data =  list([result for result in results][0].values())[1]
+            try:
+                data =  list([result for result in results][0].values())
+            except IndexError: # this shouldn't happen, I just messed by db and didn't repopulate it, some items were deleted
+                continue
+        
+            data = data[1]
             buffer = {
                 "name": anime_name,
                 "data": data
             }
+            
             recommendations.append(buffer)
             if len(recommendations) == recommendation_size + 1: 
                 break
         return recommendations
-
-        # Clean Hentai Tag
-        # hentai_flag = False
-        # for idx, k in enumerate(sorted_ix):
-        #     anime_name = list(self.embeddings_table.keys())[k]
-        #     data = self.embeddings_table[anime_name]["data"]
-
-
-        #     genres = data[anime_name]["genres"]
-        #     for genre in genres:
-        #         if genre["name"].lower() == "hentai":
-        #             hentai_flag = True
-                
-        #     if hentai_flag:
-        #         hentai_flag = False
-        #         continue
-            
-        #     buffer = {
-        #         "name": anime_name,
-        #         "data": data[anime_name]
-        #     }
-        #     recommendations.append(buffer)
-        #     if len(recommendations) == recommendation_size + 1: 
-        #         break
-        # return recommendations
-
-    
-
-
