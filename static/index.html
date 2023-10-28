@@ -6,8 +6,9 @@
   <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
+  
   <header>
-    <h1>Anime Recommender</h1>
+    <h1 class="title">Fancy Anime Recommender</h1>
   </header>
   <main>
     
@@ -18,7 +19,7 @@
       <input type="checkbox" id="knn-checkbox" name="model" value="knn" checked>
     </div>
     <div class="search-container">
-      <input type="text" id="search-bar" placeholder="Search for anime...">
+      <input type="text" id="search-bar" placeholder="🔍 Search for anime...">
       <button id="search-btn">Search</button>
     </div>
     <div id="results"></div>
@@ -67,7 +68,7 @@
             h2.textContent = result.name.replace(/\b\w/g, (c) => c.toUpperCase());
 
             const p = document.createElement('p');
-            const genres = result.data.genres.map(genre => genre.name).join(', '); // Extract and join genre names
+            const genres = result.data.genres.map(genre => genre.name).join(', ');
             p.textContent = 'Genres: ' + genres;
 
             div.appendChild(img);
@@ -80,14 +81,10 @@
           results.innerHTML = 'An error occurred.';
           console.error(err);
         });
-      });
-
-
-
+    });
   </script>
 </body>
 </html>
-
 <style>
   body {
     background-color: #1f1f1f;
@@ -98,6 +95,7 @@
 
   header {
     padding: 20px;
+    text-align: center; /* Center the text in the header */
   }
 
   h1 {
@@ -107,17 +105,19 @@
 
   .search-container {
     display: flex;
-    margin: 20px;
+    justify-content: center; /* Center the search bar horizontally */
+    margin: 10px 0; /* Add some top and bottom margin */
   }
 
   #search-bar {
-    flex-grow: 1;
+    flex-grow: 0;
     padding: 10px;
     border: none;
     border-radius: 5px;
     font-size: 18px;
     background-color: #333;
     color: #fff;
+    width: 70%; /* Make the search bar slightly smaller */
   }
 
   #search-btn {
@@ -125,14 +125,15 @@
     border: none;
     border-radius: 5px;
     font-size: 18px;
-    background-color: #4CAF50;
+    background-color: #ff42f5;
     color: #fff;
     cursor: pointer;
     transition: background-color 0.2s ease;
   }
+  
 
   #search-btn:hover {
-    background-color: #3e8e41;
+    background-color: #ff86ec;
   }
 
   #results {
@@ -146,29 +147,70 @@
     width: 200px;
     margin: 10px;
     text-align: center;
+    transition: transform 0.2s ease;
+  }
+
+  .result:hover {
+    transform: scale(1.1);
+  }
+
+  .title {
+  font-family: "Poppins", sans-serif;
+  font-size: 36px;
+  animation: colorShift 2s infinite alternate;
+}
+
+  @keyframes colorShift {
+    0% {
+      color: #ff42f5;
+    }
+    100% {
+      color: #ff86ec;
+    }
   }
 
   .result img {
-    width: 100%;
+    width: 200px;
+    height: 300px;
     border-radius: 5px;
+    transition: transform 0.2s ease;
+  }
+
+  .result:hover img {
+    transform: scale(1.2);
   }
 
   .result h2 {
     margin: 10px 0;
     font-size: 24px;
+    color: #fff;
+    transition: color 0.2s ease;
+  }
+
+  .result:hover h2 {
+    color: #AABBCC; /* Change text color on hover */
+    transform: translateY(20px); /* Move title down on hover */
   }
 
   .result p {
     margin: 10px 0;
     padding: 5px;
-    background-color: #4CAF50;
+    background-color: #ff42f5;
     color: #fff;
     border-radius: 20px;
     display: inline-block;
+    transition: background-color 0.2s ease;
   }
+
+  .result:hover p {
+    background-color: #ff86ec;
+    color: #000;
+  }
+
   .checkbox-container {
     display: flex;
-    align-items: center;
+    justify-content: center; /* Center the checkboxes horizontally */
+    align-items: center; /* Center the checkboxes vertically */
     margin: 20px;
   }
 
@@ -189,7 +231,7 @@
   }
 
   .checkbox-container input[type="checkbox"]:checked {
-    background-color: #4CAF50;
+    background-color: #ff42f5;
   }
 
   .checkbox-container input[type="checkbox"]::before {
@@ -207,5 +249,4 @@
   .checkbox-container input[type="checkbox"]:checked::before {
     transform: scale(1);
   }
-  
 </style>
