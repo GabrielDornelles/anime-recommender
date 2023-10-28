@@ -17,7 +17,7 @@ We use a BERT model to perform name matching between the searched anime and the 
 
 This is a very simple frontend written by ChatGPT just to interact better with the API.
 
-![image](https://user-images.githubusercontent.com/56324869/233866039-1a8fc973-dc18-4eda-96c7-8ad50523f70a.png)
+![image](docs/images/simple_ui_example.png)
 
 ## We have a dedicated server and frontend!
 
