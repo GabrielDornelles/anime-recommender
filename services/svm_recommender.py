@@ -10,8 +10,8 @@ import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 from mpl_toolkits.mplot3d import Axes3D  # Import 3D plotting
 
-client = MongoClient("mongodb://localhost:27017/")
-db = client["animelist"]
+client = MongoClient("mongodb:27017")
+db = client["anime_recommender_db"]
 collection = db["gogaido_beta"]
 
 # TODO: break this all into smaller services
@@ -92,27 +92,27 @@ class AnimeRecommender:
             query_idx = self.anime_list.index(query_anime_name)#[0][0]#np.where(np.all(self.embeddings == query, axis=1))#[0][0]
             y[query_idx] = 1
             #clf = svm.LinearSVC(class_weight='balanced', verbose=False, max_iter=10000, tol=1e-6, C=1.0)
-            clf = svm.SVC(verbose=False, max_iter=10000, tol=1e-6, C=1.0)
+            clf = svm.SVC(class_weight="balanced", verbose=False, max_iter=10000, tol=1e-6, C=1.0)
             clf.fit(x, y) # train
             similarities = clf.decision_function(x)
             sorted_ix = np.argsort(-similarities)
             
-            pca = PCA(n_components=3)
-            x_pca = pca.fit_transform(x)
+            # pca = PCA(n_components=3)
+            # x_pca = pca.fit_transform(x)
 
-            top_30_indices = sorted_ix[1:30]
-            top_1_index = sorted_ix[:1]
-            x_top_30 = x_pca[top_30_indices]
-            y_top_30 = y[top_30_indices]
+            # top_30_indices = sorted_ix[1:30]
+            # top_1_index = sorted_ix[:1]
+            # x_top_30 = x_pca[top_30_indices]
+            # y_top_30 = y[top_30_indices]
 
-            x_top_1 = x_pca[top_1_index]
+            # x_top_1 = x_pca[top_1_index]
 
-            # Select the last 100 data points
-            last_100_indices = sorted_ix[-100:]
-            x_last_100 = x_pca[last_100_indices]
-            y_last_100 = y[last_100_indices]
+            # # Select the last 100 data points
+            # last_100_indices = sorted_ix[-100:]
+            # x_last_100 = x_pca[last_100_indices]
+            # y_last_100 = y[last_100_indices]
 
-            # Create a PCA object and fit it to your data
+            # ## Create a PCA object and fit it to your data
             # pca = PCA(n_components=3)
             # x_pca = pca.fit_transform(x)
 
@@ -126,11 +126,11 @@ class AnimeRecommender:
             # ax.scatter(x_top_30[:, 0], x_top_30[:, 1], x_top_30[:, 2], c='b', label='Top 30 - Most similar')
 
             # # Plot the point representing the trained model in green
-            # model_point = pca.transform(clf.coef_)
+            # #model_point = pca.transform(clf.coef_)
             # anime_name = self.anime_list[sorted_ix[0]]
             # ax.scatter(x_top_1[:,0], x_top_1[:,1], x_top_1[:,2], s=100, marker='o', c='g', label=f'Trained point - Title: {anime_name}')
 
-            # # Get the coefficients of the decision boundary (hyperplane)
+            # Get the coefficients of the decision boundary (hyperplane)
             # coeff = clf.coef_[0]
             # intercept = clf.intercept_[0] #+ 1.2
 

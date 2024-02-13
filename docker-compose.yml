@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - external_data:/data/ext_db
+    
+  mongo-seed:
+    image: mongo
+    volumes:
+      - ./data:/data/external_data # mount local ./data into container /data/external_data
+    depends_on:
+      - mongodb
+    command: sh -c "mongoimport --host mongodb --db anime_recommender_db --collection gogaido_beta --file /data/external_data/animelist.gogaido_beta.json --jsonArray"
+  
+  nginx:
+    image: nginx
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - recommender_backend
+
+  recommender_backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: recommender_backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongodb
+
+volumes:
+  mongodb_data:
+  external_data:
+
